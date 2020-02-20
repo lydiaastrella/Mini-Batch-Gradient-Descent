@@ -1,6 +1,7 @@
+import math
 class InputPerceptron:
     def __init__(self, input_value):
-        self.input = input_value
+        self.output = input_value
 
 class HiddenPerceptron:
     def __init__(self, initial_weight, num_perceptron_previous_layer):
@@ -11,6 +12,9 @@ class HiddenPerceptron:
         for i in range (num_perceptron_previous_layer):
             self.weight.append(initial_weight)
             self.delta_weight.append(0)
+
+    def set_output(self, output_value):
+        self.output = output_value
 
 class OutputPerceptron:
     def __init__(self, target_value, initial_weight, num_perceptron_previous_layer):
@@ -24,9 +28,8 @@ class OutputPerceptron:
             self.weight.append(initial_weight)
             self.delta_weight.append(0)
 
-class Bias:
-    def __init__(self):
-        self.value = 1
+    def set_output(self, output_value):
+        self.output = output_value
 
 class Layer:
     def __init__(self):
@@ -45,3 +48,16 @@ class Model:
     def add_layer(self, layer):
         self.layer_list.append(layer)
         self.num_layer += 1
+
+    def get_net(self, layer_idx, perceptron_idx):
+        net_value = 0
+        i = 0
+        for x in self.layer_list[layer_idx-1]:
+            net_value += (x.output * self.layer_list[layer_idx][perceptron_idx].weight[i])
+            i += 1
+        net_value += 1 * self.layer_list[layer_idx][perceptron_idx].weight[i]
+        return net_value
+
+    def set_sigmoid(self, net_value, layer_idx, perceptron_idx):
+        output_value = 1 / (1+math.exp(-net_value))
+        self.layer_list[layer_idx][perceptron_idx].set_output(output_value)
