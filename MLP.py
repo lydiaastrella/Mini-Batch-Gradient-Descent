@@ -31,6 +31,12 @@ class OutputPerceptron:
     def set_output(self, output_value):
         self.output = output_value
 
+    def set_error(self):
+        self.error = math.pow((self.target-self.output),2) * 0.5
+
+    def set_delta(self):
+        self.delta = (self.output - self.target) * self.output * (1 - self.output)
+
 class Layer:
     def __init__(self):
         self.perceptron_list = []
@@ -61,3 +67,11 @@ class Model:
     def set_sigmoid(self, net_value, layer_idx, perceptron_idx):
         output_value = 1 / (1+math.exp(-net_value))
         self.layer_list[layer_idx][perceptron_idx].set_output(output_value)
+
+    def set_output_delta_weight(self, layer_idx, perceptron_idx):
+        for i in range (len(self.layer_list[layer_idx][perceptron_idx].delta_weight)):
+            self.layer_list[layer_idx][perceptron_idx].delta_weight[i] += self.layer_list[layer_idx][perceptron_idx].delta * self.layer_list[layer_idx-1][i].output
+
+    # def set_hidden_delta(self, layer_idx, perceptron_idx):
+
+    # def set_hidden_delta_weight(self, layer_idx, perceptron_idx):
