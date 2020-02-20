@@ -68,10 +68,19 @@ class Model:
         output_value = 1 / (1+math.exp(-net_value))
         self.layer_list[layer_idx][perceptron_idx].set_output(output_value)
 
-    def set_output_delta_weight(self, layer_idx, perceptron_idx):
+    def set_delta_weight(self, layer_idx, perceptron_idx):
         for i in range (len(self.layer_list[layer_idx][perceptron_idx].delta_weight)):
             self.layer_list[layer_idx][perceptron_idx].delta_weight[i] += self.layer_list[layer_idx][perceptron_idx].delta * self.layer_list[layer_idx-1][i].output
 
-    # def set_hidden_delta(self, layer_idx, perceptron_idx):
+    def set_hidden_delta(self, layer_idx, perceptron_idx):
+        e_per_output = 0
+        for i in range (len(self.layer_list[layer_idx+1].num_perceptron)):
+            e_per_output += (self.layer_list[layer_idx+1][i].delta * self.layer_list[layer_idx+1][i].weight[perceptron_idx])
+        self.layer_list[layer_idx][perceptron_idx].delta = e_per_output * self.layer_list[layer_idx][perceptron_idx].output * (1 - self.layer_list[layer_idx][perceptron_idx].output)
 
-    # def set_hidden_delta_weight(self, layer_idx, perceptron_idx):
+    def set_weight(self):
+        for i in range (1,self.num_layer):
+            for j in range (self.layer_list[i].num_perceptron):
+                for k in range (self.layer_list[i][j].weight):
+                    self.layer_list[i][j].weight += self.layer_list[i][j].delta_weight
+                    self.layer_list[i][j].delta_weight = 0 # jadi 0 lagi ga ya
