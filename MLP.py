@@ -58,6 +58,9 @@ class Model:
         self.layer_list = []               #list of layer in model (input layer, hidden layer, and output layer)
         self.num_layer = 0
 
+    def get_perceptron(self, layer_idx, perceptron_idx):
+        return self.layer_list[layer_idx].perceptron_list[perceptron_idx]
+
     def add_layer(self, layer):
         self.layer_list.append(layer)
         self.num_layer += 1
@@ -67,40 +70,39 @@ class Model:
         net_value = 0
         i = 0
         for x in self.layer_list[layer_idx-1].perceptron_list:
-            net_value += (x.output * self.layer_list[layer_idx].perceptron_list[perceptron_idx].weight[i])
+            net_value += (x.output * self.get_perceptron(layer_idx, perceptron_idx).weight[i])
             i += 1
-        net_value += 1 * self.layer_list[layer_idx].perceptron_list[perceptron_idx].weight[i]
+        net_value += 1 * self.get_perceptron(layer_idx, perceptron_idx).weight[i]
         return net_value
 
     # set output value of perceptron in [layer_idx, perceptron_idx]
     def set_sigmoid(self, net_value, layer_idx, perceptron_idx):
         output_value = 1 / (1+math.exp(-net_value))
-        self.layer_list[layer_idx].perceptron_list[perceptron_idx].set_output(output_value)
+        self.get_perceptron(layer_idx, perceptron_idx).set_output(output_value)
 
     # set all delta weight of perceptron in [layer_idx, perceptron_idx]
     def set_delta_weight(self, layer_idx, perceptron_idx):
-        for i in range (len(self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight) - 1):
-            self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight[i] += self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta * self.layer_list[layer_idx-1].perceptron_list[i].output
-        self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight[i+1] += self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta * 1
+        for i in range (len(self.get_perceptron(layer_idx, perceptron_idx).delta_weight) - 1):
+            self.get_perceptron(layer_idx, perceptron_idx).delta_weight[i] += self.get_perceptron(layer_idx, perceptron_idx).delta * self.get_perceptron(layer_idx-1, i).output
+        self.get_perceptron(layer_idx, perceptron_idx).delta_weight[i+1] += self.get_perceptron(layer_idx, perceptron_idx).delta * 1
 
     # set delta (backward phase) of hidden perceptron.
     # For output perceptron, use set_delta() method instead
     def set_hidden_delta(self, layer_idx, perceptron_idx):
         e_per_output = 0
         for i in range (self.layer_list[layer_idx+1].num_perceptron):
-            e_per_output += (self.layer_list[layer_idx+1].perceptron_list[i].delta * self.layer_list[layer_idx+1].perceptron_list[i].weight[perceptron_idx])
-        self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta = e_per_output * self.layer_list[layer_idx].perceptron_list[perceptron_idx].output * (1 - self.layer_list[layer_idx].perceptron_list[perceptron_idx].output)
+            e_per_output += (self.get_perceptron(layer_idx+1, i).delta * self.get_perceptron(layer_idx+1, i).weight[perceptron_idx])
+        self.get_perceptron(layer_idx, perceptron_idx).delta = e_per_output * self.get_perceptron(layer_idx, perceptron_idx).output * (1 - self.get_perceptron(layer_idx, perceptron_idx).output)
 
     # add all delta weight value to weight (last step of one batch)
-    def set_all_weight(self):
+    def set_all_weight(self, learning_rate):
         for i in range (1,self.num_layer):
             for j in range (self.layer_list[i].num_perceptron):
-                for k in range (len(self.layer_list[i].perceptron_list[j].weight)):
-                    self.layer_list[i].perceptron_list[j].weight[k] += self.layer_list[i].perceptron_list[j].delta_weight[k]
-                    self.layer_list[i].perceptron_list[j].delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
+                for k in range (len(self.get_perceptron(i,j).weight)):
+                    self.get_perceptron(i,j).weight[k] -= learning_rate * self.get_perceptron(i,j).delta_weight[k]
+                    self.get_perceptron(i,j).delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
 
 # CARA PAKAI SESUAI CONTOH DI PPT ANN HALAMAN 49 dst.
-
 # STRUKTUR
 i1 = InputPerceptron(0.05)
 i2 = InputPerceptron(0.1)
@@ -142,40 +144,42 @@ neth1 = model.get_net(1,0)
 neth2 = model.get_net(1,1)
 model.set_sigmoid(neth1, 1, 0)
 model.set_sigmoid(neth2, 1, 1)
-print(h1.output)
-print(h2.output)
+print('output h1 ' +str(h1.output))
+print('output h2 ' +str(h2.output))
 
 neto1 = model.get_net(2,0)
 neto2 = model.get_net(2,1)
 model.set_sigmoid(neto1, 2, 0)
 model.set_sigmoid(neto2, 2, 1)
-print(o1.output)
-print(o2.output)
+print('output o1 ' +str(o1.output))
+print('output o2 ' +str(o2.output))
 
 o1.set_error()
 o2.set_error()
-print(o1.error)
-print(o2.error)
+print('error o1 ' +str(o1.error))
+print('error o2 ' +str(o2.error))
 
 # BACKWARD PHASE
 print('----------------------------------------')
 o1.set_delta()
-print(o1.delta)
+print('delta o1 ' +str(o1.delta))
 o2.set_delta()
 
 model.set_delta_weight(2, 0)
 model.set_delta_weight(2, 1)
-print(o1.delta_weight[0])
+print('delta weight o1 ' +str(o1.delta_weight[0]))
 
 model.set_hidden_delta(1, 0)
 model.set_hidden_delta(1, 1)
-print(h1.delta)
+print('delta h1 ' +str(h1.delta))
 
 model.set_delta_weight(1, 0)
 model.set_delta_weight(1, 1)
-print(h1.delta_weight[0])
+print('delta weight h1 ' +str(h1.delta_weight[0]))
 
-model.set_all_weight()
+# PENGUBAHAN BOBOT
+print('----------------------------------------')
+model.set_all_weight(0.5)
 print('w1 ' + str(h1.weight[0]))
 print('w2 ' + str(h1.weight[1]))
 print('w3 ' + str(h2.weight[0]))
@@ -185,9 +189,9 @@ print('w6 ' + str(o2.weight[1]))
 print('w7 ' + str(o2.weight[0]))
 print('w8 ' + str(o2.weight[1]))
 
-print('bias h1 '+ str(h1.weight[2]))
-print('bias h2 '+ str(h2.weight[2]))
-print('bias o1 '+ str(o1.weight[2]))
-print('bias o2 '+ str(o2.weight[2]))
+print('w bias h1 '+ str(h1.weight[2]))
+print('w bias h2 '+ str(h2.weight[2]))
+print('w bias o1 '+ str(o1.weight[2]))
+print('w bias o2 '+ str(o2.weight[2]))
 
-print(h1.delta_weight[0])
+print('delta weight h1 ' +str(h1.delta_weight[0]))
