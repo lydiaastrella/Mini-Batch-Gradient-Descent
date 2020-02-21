@@ -1,14 +1,14 @@
 import math
 class InputPerceptron:
     def __init__(self, input_value):
-        self.output = input_value
+        self.output = input_value           # input data
 
 class HiddenPerceptron:
     def __init__(self, num_perceptron_previous_layer):
-        self.output = 0
-        self.delta = 0
-        self.weight = []
-        self.delta_weight = []
+        self.output = 0                     # sigmoid function result
+        self.delta = 0                      # used for backward phase
+        self.weight = []                    # weight of edges to previous layer + bias weight at last index
+        self.delta_weight = []              # weight difference of edges to previous layer + bias delta weight at last index
         for i in range (num_perceptron_previous_layer + 1):
             self.weight.append(0)
             self.delta_weight.append(0)
@@ -20,6 +20,7 @@ class HiddenPerceptron:
         self.weight[weight_idx] = weight_value
 
 class OutputPerceptron:
+    #similar structure with hidden perceptron
     def __init__(self, target_value, num_perceptron_previous_layer):
         self.output = 0
         self.target = target_value
@@ -45,7 +46,7 @@ class OutputPerceptron:
 
 class Layer:
     def __init__(self):
-        self.perceptron_list = []
+        self.perceptron_list = []           #list of perceptron in layer
         self.num_perceptron = 0
 
     def add_perceptron(self, perceptron):
@@ -54,13 +55,14 @@ class Layer:
 
 class Model:
     def __init__(self):
-        self.layer_list = []
+        self.layer_list = []               #list of layer in model (input layer, hidden layer, and output layer)
         self.num_layer = 0
 
     def add_layer(self, layer):
         self.layer_list.append(layer)
         self.num_layer += 1
 
+    # return net value of perceptron in [layer_idx, perceptron_idx]
     def get_net(self, layer_idx, perceptron_idx):
         net_value = 0
         i = 0
@@ -70,24 +72,26 @@ class Model:
         net_value += 1 * self.layer_list[layer_idx].perceptron_list[perceptron_idx].weight[i]
         return net_value
 
+    # set output value of perceptron in [layer_idx, perceptron_idx]
     def set_sigmoid(self, net_value, layer_idx, perceptron_idx):
         output_value = 1 / (1+math.exp(-net_value))
         self.layer_list[layer_idx].perceptron_list[perceptron_idx].set_output(output_value)
 
+    # set all delta weight of perceptron in [layer_idx, perceptron_idx]
     def set_delta_weight(self, layer_idx, perceptron_idx):
-        #print(len(self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight))
         for i in range (len(self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight) - 1):
-            print(i)
             self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight[i] += self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta * self.layer_list[layer_idx-1].perceptron_list[i].output
-        print(i+1)
         self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta_weight[i+1] += self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta * 1
 
+    # set delta (backward phase) of hidden perceptron.
+    # For output perceptron, use set_delta() method instead
     def set_hidden_delta(self, layer_idx, perceptron_idx):
         e_per_output = 0
         for i in range (self.layer_list[layer_idx+1].num_perceptron):
             e_per_output += (self.layer_list[layer_idx+1].perceptron_list[i].delta * self.layer_list[layer_idx+1].perceptron_list[i].weight[perceptron_idx])
         self.layer_list[layer_idx].perceptron_list[perceptron_idx].delta = e_per_output * self.layer_list[layer_idx].perceptron_list[perceptron_idx].output * (1 - self.layer_list[layer_idx].perceptron_list[perceptron_idx].output)
 
+    # add all delta weight value to weight (last step of one batch)
     def set_all_weight(self):
         for i in range (1,self.num_layer):
             for j in range (self.layer_list[i].num_perceptron):
@@ -95,9 +99,9 @@ class Model:
                     self.layer_list[i].perceptron_list[j].weight[k] += self.layer_list[i].perceptron_list[j].delta_weight[k]
                     self.layer_list[i].perceptron_list[j].delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
 
-# Cara pakai
+# CARA PAKAI SESUAI CONTOH DI PPT ANN HALAMAN 49 dst.
 
-# Struktur
+# STRUKTUR
 i1 = InputPerceptron(0.05)
 i2 = InputPerceptron(0.1)
 h1 = HiddenPerceptron(2)
@@ -133,7 +137,7 @@ model.add_layer(l1)
 model.add_layer(l2)
 model.add_layer(l3)
 
-# Feed Forward
+# FEED FORWARD
 neth1 = model.get_net(1,0)
 neth2 = model.get_net(1,1)
 model.set_sigmoid(neth1, 1, 0)
@@ -153,7 +157,7 @@ o2.set_error()
 print(o1.error)
 print(o2.error)
 
-#Backward Phase
+# BACKWARD PHASE
 print('----------------------------------------')
 o1.set_delta()
 print(o1.delta)
