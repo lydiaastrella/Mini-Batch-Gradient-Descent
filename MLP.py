@@ -1,4 +1,5 @@
 import math
+import copy
 class InputPerceptron:
     def __init__(self, input_value):
         self.output = input_value           # input data
@@ -102,6 +103,29 @@ class Model:
                     self.get_perceptron(i,j).weight[k] -= learning_rate * self.get_perceptron(i,j).delta_weight[k]
                     self.get_perceptron(i,j).delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
 
+    #BACKWARD PHASE
+    def backward_phase(self, learning_rate):
+        for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
+            output_perceptron.set_delta()
+            print('delta o ' +str(output_perceptron.delta))
+
+        for idx_output_perceptron in range (self.layer_list[self.num_layer-1].num_perceptron):
+            # print('idx_output_perceptron : ' + str(idx_output_perceptron))
+            self.set_delta_weight(self.num_layer-1, idx_output_perceptron)
+            print('delta weight o ' +str(self.get_perceptron(self.num_layer-1, idx_output_perceptron).delta_weight[0]))
+
+        for idx_hidden_layer in range (1, self.num_layer-1):
+            for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
+                self.set_hidden_delta(idx_hidden_layer, idx_hidden_perceptron)
+                print('delta h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta))
+        
+        for idx_hidden_layer in range (1, self.num_layer-1):
+            for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
+                self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
+                print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
+
+        self.set_all_weight(learning_rate)
+
 # CARA PAKAI SESUAI CONTOH DI PPT ANN HALAMAN 49 dst.
 # STRUKTUR
 i1 = InputPerceptron(0.05)
@@ -139,47 +163,51 @@ model.add_layer(l1)
 model.add_layer(l2)
 model.add_layer(l3)
 
+# print('jumlah layer : ' + model.num_layer)
+
 # FEED FORWARD
 neth1 = model.get_net(1,0)
 neth2 = model.get_net(1,1)
 model.set_sigmoid(neth1, 1, 0)
 model.set_sigmoid(neth2, 1, 1)
-print('output h1 ' +str(h1.output))
-print('output h2 ' +str(h2.output))
+# print('output h1 ' +str(h1.output))
+# print('output h2 ' +str(h2.output))
 
 neto1 = model.get_net(2,0)
 neto2 = model.get_net(2,1)
 model.set_sigmoid(neto1, 2, 0)
 model.set_sigmoid(neto2, 2, 1)
-print('output o1 ' +str(o1.output))
-print('output o2 ' +str(o2.output))
+# print('output o1 ' +str(o1.output))
+# print('output o2 ' +str(o2.output))
 
 o1.set_error()
 o2.set_error()
-print('error o1 ' +str(o1.error))
-print('error o2 ' +str(o2.error))
+# print('error o1 ' +str(o1.error))
+# print('error o2 ' +str(o2.error))
 
 # BACKWARD PHASE
+
 print('----------------------------------------')
-o1.set_delta()
-print('delta o1 ' +str(o1.delta))
-o2.set_delta()
+model.backward_phase(0.5)
+# o1.set_delta()
+# print('delta o1 ' +str(o1.delta))
+# #o2.set_delta()
 
-model.set_delta_weight(2, 0)
-model.set_delta_weight(2, 1)
-print('delta weight o1 ' +str(o1.delta_weight[0]))
+# # model.set_delta_weight(2, 0)
+# # model.set_delta_weight(2, 1)
+# print('delta weight o1 ' +str(o1.delta_weight[0]))
 
-model.set_hidden_delta(1, 0)
-model.set_hidden_delta(1, 1)
-print('delta h1 ' +str(h1.delta))
+# # model.set_hidden_delta(1, 0)
+# # model.set_hidden_delta(1, 1)
+# print('delta h1 ' +str(h1.delta))
 
-model.set_delta_weight(1, 0)
-model.set_delta_weight(1, 1)
-print('delta weight h1 ' +str(h1.delta_weight[0]))
+# # model.set_delta_weight(1, 0)
+# # model.set_delta_weight(1, 1)
+# print('delta weight h1 ' +str(h1.delta_weight[0]))
 
 # PENGUBAHAN BOBOT
 print('----------------------------------------')
-model.set_all_weight(0.5)
+
 print('w1 ' + str(h1.weight[0]))
 print('w2 ' + str(h1.weight[1]))
 print('w3 ' + str(h2.weight[0]))
@@ -195,3 +223,4 @@ print('w bias o1 '+ str(o1.weight[2]))
 print('w bias o2 '+ str(o2.weight[2]))
 
 print('delta weight h1 ' +str(h1.delta_weight[0]))
+
