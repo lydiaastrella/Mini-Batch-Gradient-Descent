@@ -1,8 +1,14 @@
+import random
 import math
 import copy
+import pandas
+
 class InputPerceptron:
-    def __init__(self, input_value):
-        self.output = input_value           # input data
+    def __init__(self):
+        self.output = 0           # input data
+    
+    def set_input_value(self, input_value):
+        self.output = input_value
 
 class HiddenPerceptron:
     def __init__(self, num_perceptron_previous_layer):
@@ -22,9 +28,10 @@ class HiddenPerceptron:
 
 class OutputPerceptron:
     #similar structure with hidden perceptron
-    def __init__(self, target_value, num_perceptron_previous_layer):
+    def __init__(self, label, num_perceptron_previous_layer):
+        self.label = label
         self.output = 0
-        self.target = target_value
+        self.target = 0
         self.error = 0
         self.delta = 0
         self.weight = []
@@ -32,6 +39,9 @@ class OutputPerceptron:
         for i in range (num_perceptron_previous_layer + 1):
             self.weight.append(0)
             self.delta_weight.append(0)
+
+    def set_target(self, target_value):
+        self.target = target_value
 
     def set_output(self, output_value):
         self.output = output_value
@@ -111,8 +121,6 @@ class Model:
 
     #reset cummulative error before epoch begin
     def reset_cumulative_error(self):
-        for x in (self.layer_list[self.num_layer-1].perceptron_list):
-            self.cummulative_error += x.error
         self.cummulative_error = 0
 
     def feedForward(self):
@@ -130,7 +138,7 @@ class Model:
         self.update_cumulative_error()
 
     #BACKWARD PHASE
-    def backward_phase(self, learning_rate):
+    def backward_phase(self):
         for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
             output_perceptron.set_delta()
             print('delta o ' +str(output_perceptron.delta))
@@ -150,49 +158,70 @@ class Model:
                 self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
                 print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
 
-        self.set_all_weight(learning_rate)
-
-# CARA PAKAI SESUAI CONTOH DI PPT ANN HALAMAN 49 dst.
-# STRUKTUR
-i1 = InputPerceptron(0.05)
-i2 = InputPerceptron(0.1)
-h1 = HiddenPerceptron(2)
-h2 = HiddenPerceptron(2)
-o1 = OutputPerceptron(0.01, 2)
-o2 = OutputPerceptron(0.99, 2)
-
-h1.set_weight(0, 0.15)
-h1.set_weight(1, 0.2)
-h1.set_weight(2, 0.35)
-h2.set_weight(0, 0.25)
-h2.set_weight(1, 0.3)
-h2.set_weight(2, 0.35)
-o1.set_weight(0, 0.4)
-o1.set_weight(1, 0.45)
-o1.set_weight(2, 0.6)
-o2.set_weight(0, 0.5)
-o2.set_weight(1, 0.55)
-o2.set_weight(2, 0.6)
-
-l1 = Layer()
-l1.add_perceptron(i1)
-l1.add_perceptron(i2)
-l2 = Layer()
-l2.add_perceptron(h1)
-l2.add_perceptron(h2)
-l3 = Layer()
-l3.add_perceptron(o1)
-l3.add_perceptron(o2)
-
+# Initiate empty model
 model = Model()
-model.add_layer(l1)
-model.add_layer(l2)
-model.add_layer(l3)
 
-# print('jumlah layer : ' + model.num_layer)
+# Ask for data source
+data_source = input('Masukkan data yang diinginkan (iris/ppt): ')
+
+# Fetch data
+if (data_source == 'ppt'):
+    data = {
+        'attr1': [0.05],
+        'attr2': [0.01],
+        'result': ['Output2']
+    }
+    df = pandas.DataFrame(data)
+else:
+    df = pandas.read_csv('iris.csv')
+print('Data loaded.')
+
+# Determine info about input and outputs from data
+attributes = df.columns.values.tolist()
+attributes.pop()
+results = set(df.iloc[:,-1].tolist())
+result_labels = []
+for result in results:
+    result_labels.append(result)
+
+# Ask for number of hidden layers and number of perceptrons per layer
+if (data_source == 'ppt'):
+    num_hidden_layer = 1
+    num_perceptrons_in_layer = [2]
+else:
+    num_hidden_layer = int(input('Masukkan jumlah hidden layer: '))
+    num_perceptrons_in_layer = []
+    print('Masukkan jumlah perceptron untuk tiap layer.')
+    for x in range(num_hidden_layer):
+        num_perceptrons_in_layer.append(int(input()))
+
+# Build model according to given variables
+layer = Layer()
+for x in range(len(attributes)):
+    layer.add_perceptron(InputPerceptron())
+model.add_layer(layer)
+
+for layer_idx in range(len(num_perceptrons_in_layer)):
+    layer = Layer()
+    for x in range(num_perceptrons_in_layer[layer_idx]):
+        hp = HiddenPerceptron(num_perceptrons_in_layer[layer_idx-1])
+        for input_idx in range(num_perceptrons_in_layer[layer_idx-1] + 1):
+            hp.set_weight(input_idx, random.randrange(0, 1))
+        layer.add_perceptron(hp)
+    model.add_layer(layer)
+
+layer = Layer()
+for x in range(len(result_labels)):
+    op = OutputPerceptron(result_labels[x], num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1])
+    for input_idx in range(num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1] + 1):
+        hp.set_weight(input_idx, random.randrange(0, 1))
+    layer.add_perceptron(op)
+model.add_layer(layer)
+
+print('Model created.')
 
 # FEED FORWARD
-
+'''
 model.feedForward()
 print('output h1 ' +str(h1.output))
 print('output h2 ' +str(h2.output))
@@ -244,3 +273,4 @@ print('w bias o2 '+ str(o2.weight[2]))
 
 print('delta weight h1 ' +str(h1.delta_weight[0]))
 
+'''
