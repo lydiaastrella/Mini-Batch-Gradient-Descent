@@ -220,57 +220,37 @@ model.add_layer(layer)
 
 print('Model created.')
 
-# FEED FORWARD
-'''
-model.feedForward()
-print('output h1 ' +str(h1.output))
-print('output h2 ' +str(h2.output))
+# INPUT VARIABLES
+max_iteration = int(input('Jumlah maksimal iterasi  : '))
+error_threshold = float(input('Error threshold          : '))
+learning_rate = float(input('Learning rate            : '))
+batch_size = int(input('Jumlah data per batch    : '))
 
-print('output o1 ' +str(o1.output))
-print('output o2 ' +str(o2.output))
+# MAIN LOOP
+itr = 0
+error = float("inf")
 
-print('error o1 ' +str(o1.error))
-print('error o2 ' +str(o2.error))
+num_batches = round(len(df.index) / batch_size)
+if (num_batches == 0):
+    num_batches = 1
 
-print('cummulative error ' +str(model.cummulative_error))
-
-# BACKWARD PHASE
-
-print('----------------------------------------')
-model.backward_phase(0.5)
-# o1.set_delta()
-# print('delta o1 ' +str(o1.delta))
-# #o2.set_delta()
-
-# # model.set_delta_weight(2, 0)
-# # model.set_delta_weight(2, 1)
-# print('delta weight o1 ' +str(o1.delta_weight[0]))
-
-# # model.set_hidden_delta(1, 0)
-# # model.set_hidden_delta(1, 1)
-# print('delta h1 ' +str(h1.delta))
-
-# # model.set_delta_weight(1, 0)
-# # model.set_delta_weight(1, 1)
-# print('delta weight h1 ' +str(h1.delta_weight[0]))
-
-# PENGUBAHAN BOBOT
-print('----------------------------------------')
-
-print('w1 ' + str(h1.weight[0]))
-print('w2 ' + str(h1.weight[1]))
-print('w3 ' + str(h2.weight[0]))
-print('w4 ' + str(h2.weight[1]))
-print('w5 ' + str(o1.weight[0]))
-print('w6 ' + str(o2.weight[1]))
-print('w7 ' + str(o2.weight[0]))
-print('w8 ' + str(o2.weight[1]))
-
-print('w bias h1 '+ str(h1.weight[2]))
-print('w bias h2 '+ str(h2.weight[2]))
-print('w bias o1 '+ str(o1.weight[2]))
-print('w bias o2 '+ str(o2.weight[2]))
-
-print('delta weight h1 ' +str(h1.delta_weight[0]))
-
-'''
+while (itr < max_iteration) and (error > error_threshold):
+    model.reset_cumulative_error()
+    itr += 1
+    for x in range(num_batches):
+        for y in range(batch_size):
+            if (x * batch_size + y < len(df.index)):
+                data_row = df.iloc[x * batch_size + y]
+                # set input values
+                for i in range(len(attributes)):
+                    model.get_perceptron(0, i).set_input_value(data_row.get(attributes[i]))
+                # set target values
+                for i in range(len(result_labels)):
+                    if data_row.get(result_column_name) != model.get_perceptron(model.num_layer-1, i).label:
+                        model.get_perceptron(model.num_layer-1, i).set_target(0)
+                    else:
+                        model.get_perceptron(model.num_layer-1, i).set_target(1)
+                model.feedForward()
+                model.backward_phase()
+        model.set_all_weight(learning_rate)
+    error = model.cummulative_error
