@@ -27,24 +27,27 @@ target = []
 for i in range (len(df.values)):
     target.append(result_numeric[i])
 
-# Ask for number of hidden layers and number of perceptrons per layer
-num_hidden_layer = int(input('Masukkan jumlah hidden layer: '))
-num_perceptrons_in_layer = []
-print('Masukkan jumlah perceptron untuk tiap layer.')
-for x in range(num_hidden_layer):
-    num_perceptrons_in_layer.append(int(input()))
+status = input("Mau pakai parameter manual atau auto aja? (manual/auto) ")
 
-# INPUT VARIABLES
-max_iteration = int(input('Jumlah maksimal iterasi  : '))
-learning_rate = float(input('Learning rate            : '))
-batch_size = int(input('Jumlah data per batch    : '))
+if (status == 'manual'):
+    # Ask for number of hidden layers and number of perceptrons per layer
+    num_hidden_layer = int(input('Masukkan jumlah hidden layer: '))
+    num_perceptrons_in_layer = []
+    print('Masukkan jumlah perceptron untuk tiap layer.')
+    for x in range(num_hidden_layer):
+        num_perceptrons_in_layer.append(int(input()))
 
-# MLP from sklearn
-mlp = MLPClassifier(hidden_layer_sizes=num_hidden_layer, max_iter=max_iteration, solver='sgd', 
-                    batch_size=batch_size, learning_rate_init=learning_rate)
+    # INPUT VARIABLES
+    max_iteration = int(input('Jumlah maksimal iterasi  : '))
+    learning_rate = float(input('Learning rate            : '))
+    batch_size = int(input('Jumlah data per batch    : '))
 
-# mlp = MLPClassifier(hidden_layer_sizes=1, max_iter=100, solver='sgd', 
-#                     batch_size=5, learning_rate_init=0.1)
+    # MLP from sklearn dengan param macem2
+    mlp = MLPClassifier(hidden_layer_sizes=num_hidden_layer, max_iter=max_iteration, solver='sgd', 
+                        batch_size=batch_size, learning_rate_init=learning_rate)
+else:
+    # MLP from sklearn dengan param auto semua
+    mlp = MLPClassifier()
 
 mlp.fit(input_data, target)
 
