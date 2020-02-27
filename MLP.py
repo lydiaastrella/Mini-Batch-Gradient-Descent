@@ -103,6 +103,18 @@ class Model:
                     self.get_perceptron(i,j).weight[k] -= learning_rate * self.get_perceptron(i,j).delta_weight[k]
                     self.get_perceptron(i,j).delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
 
+    def feedForward(self):
+        #set all net value and sigmoid value
+        for i in range(1, self.num_layer):
+            for j in range(self.layer_list[i].num_perceptron):
+                net = self.get_net(i,j)
+                self.set_sigmoid(net,i,j)
+
+        #set error value
+        output = self.num_layer-1
+        for k in range(self.layer_list[output].num_perceptron):
+            self.layer_list[output].perceptron_list[k].set_error()
+
     #BACKWARD PHASE
     def backward_phase(self, learning_rate):
         for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
@@ -166,24 +178,16 @@ model.add_layer(l3)
 # print('jumlah layer : ' + model.num_layer)
 
 # FEED FORWARD
-neth1 = model.get_net(1,0)
-neth2 = model.get_net(1,1)
-model.set_sigmoid(neth1, 1, 0)
-model.set_sigmoid(neth2, 1, 1)
-# print('output h1 ' +str(h1.output))
-# print('output h2 ' +str(h2.output))
 
-neto1 = model.get_net(2,0)
-neto2 = model.get_net(2,1)
-model.set_sigmoid(neto1, 2, 0)
-model.set_sigmoid(neto2, 2, 1)
-# print('output o1 ' +str(o1.output))
-# print('output o2 ' +str(o2.output))
+model.feedForward()
+print('output h1 ' +str(h1.output))
+print('output h2 ' +str(h2.output))
 
-o1.set_error()
-o2.set_error()
-# print('error o1 ' +str(o1.error))
-# print('error o2 ' +str(o2.error))
+print('output o1 ' +str(o1.output))
+print('output o2 ' +str(o2.output))
+
+print('error o1 ' +str(o1.error))
+print('error o2 ' +str(o2.error))
 
 # BACKWARD PHASE
 
