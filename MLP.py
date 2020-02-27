@@ -58,6 +58,7 @@ class Model:
     def __init__(self):
         self.layer_list = []               #list of layer in model (input layer, hidden layer, and output layer)
         self.num_layer = 0
+        self.cummulative_error = 0
 
     def get_perceptron(self, layer_idx, perceptron_idx):
         return self.layer_list[layer_idx].perceptron_list[perceptron_idx]
@@ -102,6 +103,17 @@ class Model:
                 for k in range (len(self.get_perceptron(i,j).weight)):
                     self.get_perceptron(i,j).weight[k] -= learning_rate * self.get_perceptron(i,j).delta_weight[k]
                     self.get_perceptron(i,j).delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
+    
+    #update cummulative_error at the end of feed forward
+    def update_cumulative_error(self):
+        for x in (self.layer_list[self.num_layer-1].perceptron_list):
+            self.cummulative_error += x.error
+
+    #reset cummulative error before epoch begin
+    def reset_cumulative_error(self):
+        for x in (self.layer_list[self.num_layer-1].perceptron_list):
+            self.cummulative_error += x.error
+        self.cummulative_error = 0
 
     def feedForward(self):
         #set all net value and sigmoid value
@@ -114,6 +126,8 @@ class Model:
         output = self.num_layer-1
         for k in range(self.layer_list[output].num_perceptron):
             self.layer_list[output].perceptron_list[k].set_error()
+        
+        self.update_cumulative_error()
 
     #BACKWARD PHASE
     def backward_phase(self, learning_rate):
@@ -188,6 +202,8 @@ print('output o2 ' +str(o2.output))
 
 print('error o1 ' +str(o1.error))
 print('error o2 ' +str(o2.error))
+
+print('cummulative error ' +str(model.cummulative_error))
 
 # BACKWARD PHASE
 
