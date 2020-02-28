@@ -163,9 +163,7 @@ class Model:
         #print input layer
         print("INPUT LAYER")
         for i in range(self.layer_list[0].num_perceptron):
-            print("|I-" + str(i+1) + "| <= value(" + str(self.layer_list[0].perceptron_list[i].output), end=")  ")
-            if (i>=4 and i%4 == 0):
-                print("\n")
+            print("|I-" + str(i+1) + "| <= value(" + str(self.layer_list[0].perceptron_list[i].output)+ ")  ")
         print("\n")
 
         #print hidden layer
@@ -175,8 +173,7 @@ class Model:
                 print("|H-(" + str(j) + "," + str(k+1) + ")| <= weight ", end="")
                 for w in range(len(self.layer_list[j].perceptron_list[k].weight)):
                     print("(" + str(self.layer_list[j].perceptron_list[k].weight[w]), end="),  ")
-                if (i>=2 and i%2 == 0):
-                    print("\n")
+                print("\n")
         print("\n")
 
         #print output layer
@@ -187,8 +184,7 @@ class Model:
             for x in range(len(self.layer_list[last].perceptron_list[o].weight)):
                 print("(" + str(self.layer_list[last].perceptron_list[o].weight[x]), end="),  ")
             print("( target => " + str(self.layer_list[last].perceptron_list[o].label), end=" )  ")
-            if (i>=2 and i%2 == 0):
-                print("\n")
+            print("\n")
         print("\n")
 
 # Initiate empty model
@@ -252,6 +248,7 @@ for x in range(len(result_labels)):
 model.add_layer(layer)
 
 print('Model created.')
+model.print_model()
 
 # INPUT VARIABLES
 max_iteration = int(input('Jumlah maksimal iterasi  : '))
