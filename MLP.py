@@ -227,7 +227,8 @@ for layer_idx in range(len(num_perceptrons_in_layer)):
         else:
             hp = HiddenPerceptron(num_perceptrons_in_layer[layer_idx-1])
         for input_idx in range(len(hp.weight)):
-            hp.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
+            hp.set_weight(input_idx, 0)
+            # hp.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
         layer.add_perceptron(hp)
     model.add_layer(layer)
 
@@ -235,18 +236,20 @@ layer = Layer()
 for x in range(len(result_labels)):
     op = OutputPerceptron(result_labels[x], num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1])
     for input_idx in range(num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1] + 1):
-        op.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
+        op.set_weight(input_idx, 0)
+        # op.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
     layer.add_perceptron(op)
 model.add_layer(layer)
 
-print('Model created.')
-model.print_model()
+print('Model initialized.')
 
 # INPUT VARIABLES
 max_iteration = int(input('Jumlah maksimal iterasi  : '))
 error_threshold = float(input('Error threshold          : '))
 learning_rate = float(input('Learning rate            : '))
 batch_size = int(input('Jumlah data per batch    : '))
+
+print('Backpropagation in progress...')
 
 # MAIN LOOP
 itr = 0
@@ -259,6 +262,7 @@ if (num_batches == 0):
 while (itr < max_iteration) and (error > error_threshold):
     cummulative_error = 0
     itr += 1
+    print('----------------------- ITERATION', itr, '-----------------------')
     for x in range(num_batches):
         for y in range(batch_size):
             if (x * batch_size + y < len(df.index)):
@@ -272,6 +276,7 @@ while (itr < max_iteration) and (error > error_threshold):
                         model.get_perceptron(model.num_layer-1, i).set_target(0)
                     else:
                         model.get_perceptron(model.num_layer-1, i).set_target(1)
+                        #print('Index', str(x * batch_size + y), '; target:', model.get_perceptron(model.num_layer-1, i).label)
                 
                 model.feedForward()
 
@@ -283,6 +288,7 @@ while (itr < max_iteration) and (error > error_threshold):
                 
                 # Set error if output is not desired label
                 if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
+                    print('Index', str(x * batch_size + y), model.get_perceptron(model.num_layer-1, idx_best).label, data_row.get(result_column_name))
                     cummulative_error += 1
                 
                 model.backward_phase()
@@ -290,3 +296,37 @@ while (itr < max_iteration) and (error > error_threshold):
         model.set_all_weight(learning_rate)
     
     error = float(cummulative_error) / len(df.index)
+
+print('Backpropagation finished, calculating accuracy...')
+
+num_error = 0
+# ACCURACY CHECK
+for x in range(len(df.index)):
+    data_row = df.iloc[x]
+    # set input values
+    for i in range(len(attributes)):
+        model.get_perceptron(0, i).set_input_value(data_row.get(attributes[i]))
+    # set target values
+    for i in range(len(result_labels)):
+        if data_row.get(result_column_name) != model.get_perceptron(model.num_layer-1, i).label:
+            model.get_perceptron(model.num_layer-1, i).set_target(0)
+        else:
+            model.get_perceptron(model.num_layer-1, i).set_target(1)
+    
+    model.feedForward()
+
+    # Choose output label with largest output value
+    idx_best = 0
+    for i in range(len(result_labels)):
+        if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
+            idx_best = i
+    
+    print(model.get_perceptron(model.num_layer-1, idx_best).label)
+    # Set error if output is not desired label
+    if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
+        num_error += 1
+
+accuracy = 1 - float(num_error) / len(df.index)
+print('Model has an accuracy of', accuracy)
+
+model.print_model()
