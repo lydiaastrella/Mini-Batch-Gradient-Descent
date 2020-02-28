@@ -178,6 +178,35 @@ class Model:
             print("\n")
         print("\n")
 
+def count_error(model, df):
+    num_error = 0
+    # ACCURACY CHECK
+    for x in range(len(df.index)):
+        data_row = df.iloc[x]
+        # set input values
+        for i in range(len(attributes)):
+            model.get_perceptron(0, i).set_input_value(data_row.get(attributes[i]))
+        # set target values
+        for i in range(len(result_labels)):
+            if data_row.get(result_column_name) != model.get_perceptron(model.num_layer-1, i).label:
+                model.get_perceptron(model.num_layer-1, i).set_target(0)
+            else:
+                model.get_perceptron(model.num_layer-1, i).set_target(1)
+        
+        model.feedForward()
+
+        # Choose output label with largest output value
+        idx_best = 0
+        for i in range(len(result_labels)):
+            if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
+                idx_best = i
+        
+        #print(model.get_perceptron(model.num_layer-1, idx_best).label)
+        # Set error if output is not desired label
+        if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
+            num_error += 1
+    return num_error
+
 # Initiate empty model
 model = Model()
 
@@ -264,10 +293,9 @@ if (num_batches == 0):
 
 f = open("output.txt", "w")
 sys.stdout = f
-while (itr < max_iteration) and (error > error_threshold):
-    cummulative_error = 0
+while (itr < max_iteration) or (error < error_threshold):
     itr += 1
-    print('----------------------- ITERATION', itr, '-----------------------')
+    #print('----------------------- ITERATION', itr, '-----------------------')
     for x in range(num_batches):
         for y in range(batch_size):
             if (x * batch_size + y < len(df.index)):
@@ -288,53 +316,22 @@ while (itr < max_iteration) and (error > error_threshold):
                 # Choose output label with largest output value
                 idx_best = 0
                 for i in range(len(result_labels)):
-                    print(model.get_perceptron(model.num_layer-1, i).output, '?', model.get_perceptron(model.num_layer-1, idx_best).output)
+                    #print(model.get_perceptron(model.num_layer-1, i).output, '?', model.get_perceptron(model.num_layer-1, idx_best).output)
                     if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
                         idx_best = i
                 
-                print('terpilih :', idx_best)
-
-                # Set error if output is not desired label
-                if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
-                    print('Index', str(x * batch_size + y), model.get_perceptron(model.num_layer-1, idx_best).label, data_row.get(result_column_name))
-                    cummulative_error += 1
+                #print('terpilih :', idx_best)
                 
                 model.backward_phase()
-        
         model.set_all_weight(learning_rate)
-    
+
+    cummulative_error = count_error(model, df)
     error = float(cummulative_error) / len(df.index)
 
 print('Backpropagation finished, calculating accuracy...')
-
-num_error = 0
-# ACCURACY CHECK
-for x in range(len(df.index)):
-    data_row = df.iloc[x]
-    # set input values
-    for i in range(len(attributes)):
-        model.get_perceptron(0, i).set_input_value(data_row.get(attributes[i]))
-    # set target values
-    for i in range(len(result_labels)):
-        if data_row.get(result_column_name) != model.get_perceptron(model.num_layer-1, i).label:
-            model.get_perceptron(model.num_layer-1, i).set_target(0)
-        else:
-            model.get_perceptron(model.num_layer-1, i).set_target(1)
-    
-    model.feedForward()
-
-    # Choose output label with largest output value
-    idx_best = 0
-    for i in range(len(result_labels)):
-        if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
-            idx_best = i
-    
-    print(model.get_perceptron(model.num_layer-1, idx_best).label)
-    # Set error if output is not desired label
-    if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
-        num_error += 1
-
-accuracy = 1 - float(num_error) / len(df.index)
-print('Model has an accuracy of', accuracy)
+print('cummulative error', cummulative_error)
+print('length df', len(df.index))
+print('error', error)
+print('akurasi', 1-error)
 
 model.print_model()
