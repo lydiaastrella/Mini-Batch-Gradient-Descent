@@ -2,7 +2,7 @@ import random
 import math
 import copy
 import pandas
-
+import os,sys
 class InputPerceptron:
     def __init__(self):
         self.output = 0           # input data
@@ -89,7 +89,8 @@ class Model:
     # set output value of perceptron in [layer_idx, perceptron_idx]
     def set_sigmoid(self, net_value, layer_idx, perceptron_idx):
         output_value = 1 / (1+math.exp(-net_value))
-        self.get_perceptron(layer_idx, perceptron_idx).set_output(output_value)
+        self.layer_list[layer_idx].perceptron_list[perceptron_idx].set_output(output_value)
+        #self.get_perceptron(layer_idx, perceptron_idx).set_output(output_value)
 
     # set all delta weight of perceptron in [layer_idx, perceptron_idx]
     def set_delta_weight(self, layer_idx, perceptron_idx):
@@ -127,24 +128,26 @@ class Model:
         
     #BACKWARD PHASE
     def backward_phase(self):
-        for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
-            output_perceptron.set_delta()
-            #print('delta o ' +str(output_perceptron.delta))
+        # for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
+        #     output_perceptron.set_delta()
+        #     #print('delta o ' +str(output_perceptron.delta))
 
         for idx_output_perceptron in range (self.layer_list[self.num_layer-1].num_perceptron):
             #print('idx_output_perceptron : ' + str(idx_output_perceptron))
+            self.layer_list[self.num_layer-1].perceptron_list[idx_output_perceptron].set_delta()
             self.set_delta_weight(self.num_layer-1, idx_output_perceptron)
             #print('delta weight o ' +str(self.get_perceptron(self.num_layer-1, idx_output_perceptron).delta_weight[0]))
 
         for idx_hidden_layer in range (1, self.num_layer-1):
             for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
                 self.set_hidden_delta(idx_hidden_layer, idx_hidden_perceptron)
+                self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
                 #print('delta h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta))
         
-        for idx_hidden_layer in range (1, self.num_layer-1):
-            for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
-                self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
-                #print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
+        # for idx_hidden_layer in range (1, self.num_layer-1):
+        #     for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
+        #         self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
+        #         #print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
 
     #PRINT MODEL
     def print_model(self):
@@ -259,6 +262,8 @@ num_batches = round(len(df.index) / batch_size)
 if (num_batches == 0):
     num_batches = 1
 
+f = open("output.txt", "w")
+sys.stdout = f
 while (itr < max_iteration) and (error > error_threshold):
     cummulative_error = 0
     itr += 1
@@ -283,9 +288,12 @@ while (itr < max_iteration) and (error > error_threshold):
                 # Choose output label with largest output value
                 idx_best = 0
                 for i in range(len(result_labels)):
+                    print(model.get_perceptron(model.num_layer-1, i).output, '?', model.get_perceptron(model.num_layer-1, idx_best).output)
                     if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
                         idx_best = i
                 
+                print('terpilih :', idx_best)
+
                 # Set error if output is not desired label
                 if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
                     print('Index', str(x * batch_size + y), model.get_perceptron(model.num_layer-1, idx_best).label, data_row.get(result_column_name))

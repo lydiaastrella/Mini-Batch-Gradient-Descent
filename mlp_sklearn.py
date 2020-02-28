@@ -1,6 +1,7 @@
 from sklearn.neural_network import MLPClassifier
 from sklearn import metrics
 import pandas as pd
+import os,sys
 
 # Loading iris dataset
 df = pd.read_csv('iris.csv')
@@ -49,6 +50,9 @@ else:
 
 mlp.fit(input_data, target)
 
+f = open("output_sklearn.txt", "w")
+sys.stdout = f
+
 prediction = mlp.predict(input_data)
 print('Akurasi MLP dari sklearn :', metrics.accuracy_score(prediction,target))
 print('')
@@ -68,5 +72,5 @@ for hidden_layer_id in range (len(mlp.intercepts_[0])):
 print('')
 print('OUTPUT LAYERS\' BIAS WEIGHT :')
 for output_layer_id in range (len(mlp.intercepts_[1])):
-    print("bias output layer " + str(output_layer_id+1) + " : " + str(mlp.intercepts_[0][output_layer_id]))
+    print("bias output layer " + str(output_layer_id+1) + " : " + str(mlp.intercepts_[1][output_layer_id]))
 print('')
