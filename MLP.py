@@ -158,6 +158,39 @@ class Model:
                 self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
                 print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
 
+    #PRINT MODEL
+    def print_model(self):
+        #print input layer
+        print("INPUT LAYER")
+        for i in range(self.layer_list[0].num_perceptron):
+            print("|I-" + str(i+1) + "| <= value(" + str(self.layer_list[0].perceptron_list[i].output), end=")  ")
+            if (i>=4 and i%4 == 0):
+                print("\n")
+        print("\n")
+
+        #print hidden layer
+        print("HIDDEN LAYER")
+        for j in range(1, self.num_layer-1):
+            for k in range(self.layer_list[j].num_perceptron):
+                print("|H-(" + str(j) + "," + str(k+1) + ")| <= weight ", end="")
+                for w in range(len(self.layer_list[j].perceptron_list[k].weight)):
+                    print("(" + str(self.layer_list[j].perceptron_list[k].weight[w]), end="),  ")
+                if (i>=2 and i%2 == 0):
+                    print("\n")
+        print("\n")
+
+        #print output layer
+        print("OUTPUT LAYER")
+        last = self.num_layer -1
+        for o in range(self.layer_list[last].num_perceptron):
+            print("|O-" + str(o+1) + "| <= weight ", end="")
+            for x in range(len(self.layer_list[last].perceptron_list[o].weight)):
+                print("(" + str(self.layer_list[last].perceptron_list[o].weight[x]), end="),  ")
+            print("( target => " + str(self.layer_list[last].perceptron_list[o].label), end=" )  ")
+            if (i>=2 and i%2 == 0):
+                print("\n")
+        print("\n")
+
 # Initiate empty model
 model = Model()
 
