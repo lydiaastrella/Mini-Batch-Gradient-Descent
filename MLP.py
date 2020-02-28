@@ -141,22 +141,22 @@ class Model:
     def backward_phase(self):
         for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
             output_perceptron.set_delta()
-            print('delta o ' +str(output_perceptron.delta))
+            #print('delta o ' +str(output_perceptron.delta))
 
         for idx_output_perceptron in range (self.layer_list[self.num_layer-1].num_perceptron):
-            # print('idx_output_perceptron : ' + str(idx_output_perceptron))
+            #print('idx_output_perceptron : ' + str(idx_output_perceptron))
             self.set_delta_weight(self.num_layer-1, idx_output_perceptron)
-            print('delta weight o ' +str(self.get_perceptron(self.num_layer-1, idx_output_perceptron).delta_weight[0]))
+            #print('delta weight o ' +str(self.get_perceptron(self.num_layer-1, idx_output_perceptron).delta_weight[0]))
 
         for idx_hidden_layer in range (1, self.num_layer-1):
             for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
                 self.set_hidden_delta(idx_hidden_layer, idx_hidden_perceptron)
-                print('delta h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta))
+                #print('delta h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta))
         
         for idx_hidden_layer in range (1, self.num_layer-1):
             for idx_hidden_perceptron in range (self.layer_list[idx_hidden_layer].num_perceptron):
                 self.set_delta_weight(idx_hidden_layer, idx_hidden_perceptron)
-                print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
+                #print('delta weight h ' +str(self.get_perceptron(idx_hidden_layer, idx_hidden_perceptron).delta_weight[0]))
 
     #PRINT MODEL
     def print_model(self):
