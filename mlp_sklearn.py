@@ -51,3 +51,22 @@ mlp.fit(input_data, target)
 
 prediction = mlp.predict(input_data)
 print('Akurasi MLP dari sklearn :', metrics.accuracy_score(prediction,target))
+print('')
+print('HIDDEN LAYERS\' WEIGHT :')
+for input_layer_id in range (len(mlp.coefs_[0])):
+    for hidden_layer_id in range (len(mlp.coefs_[0][input_layer_id])):
+        print("from input layer " + str(input_layer_id+1) + " to hidden layer " + str(hidden_layer_id+1) + " : " + str(mlp.coefs_[0][input_layer_id][hidden_layer_id]))
+print('')
+print('OUTPUT LAYERS\' WEIGHT :')
+for hidden_layer_id in range (len(mlp.coefs_[1])):
+    for output_layer_id in range (len(mlp.coefs_[1][hidden_layer_id])):
+        print("from hidden layer " + str(hidden_layer_id+1) + " to output layer " + str(output_layer_id+1) + " : " + str(mlp.coefs_[1][hidden_layer_id][output_layer_id]))
+print('')
+print('HIDDEN LAYERS\' BIAS WEIGHT :')
+for hidden_layer_id in range (len(mlp.intercepts_[0])):
+    print("bias hidden layer " + str(hidden_layer_id+1) + " : " + str(mlp.intercepts_[0][hidden_layer_id]))
+print('')
+print('OUTPUT LAYERS\' BIAS WEIGHT :')
+for output_layer_id in range (len(mlp.intercepts_[1])):
+    print("bias output layer " + str(output_layer_id+1) + " : " + str(mlp.intercepts_[0][output_layer_id]))
+print('')
