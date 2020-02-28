@@ -68,7 +68,6 @@ class Model:
     def __init__(self):
         self.layer_list = []               #list of layer in model (input layer, hidden layer, and output layer)
         self.num_layer = 0
-        self.cummulative_error = 0
 
     def get_perceptron(self, layer_idx, perceptron_idx):
         return self.layer_list[layer_idx].perceptron_list[perceptron_idx]
@@ -114,15 +113,6 @@ class Model:
                     self.get_perceptron(i,j).weight[k] -= learning_rate * self.get_perceptron(i,j).delta_weight[k]
                     self.get_perceptron(i,j).delta_weight[k] = 0 # jadi 0 lagi ga ya? saya bingung gais wkwk
     
-    #update cummulative_error at the end of feed forward
-    def update_cumulative_error(self):
-        for x in (self.layer_list[self.num_layer-1].perceptron_list):
-            self.cummulative_error += x.error
-
-    #reset cummulative error before epoch begin
-    def reset_cumulative_error(self):
-        self.cummulative_error = 0
-
     def feedForward(self):
         #set all net value and sigmoid value
         for i in range(1, self.num_layer):
@@ -135,8 +125,6 @@ class Model:
         for k in range(self.layer_list[output].num_perceptron):
             self.layer_list[output].perceptron_list[k].set_error()
         
-        self.update_cumulative_error()
-
     #BACKWARD PHASE
     def backward_phase(self):
         for output_perceptron in (self.layer_list[self.num_layer-1].perceptron_list):
@@ -269,7 +257,7 @@ if (num_batches == 0):
     num_batches = 1
 
 while (itr < max_iteration) and (error > error_threshold):
-    model.reset_cumulative_error()
+    cummulative_error = 0
     itr += 1
     for x in range(num_batches):
         for y in range(batch_size):
@@ -284,7 +272,21 @@ while (itr < max_iteration) and (error > error_threshold):
                         model.get_perceptron(model.num_layer-1, i).set_target(0)
                     else:
                         model.get_perceptron(model.num_layer-1, i).set_target(1)
+                
                 model.feedForward()
+
+                # Choose output label with largest output value
+                idx_best = 0
+                for i in range(len(result_labels)):
+                    if model.get_perceptron(model.num_layer-1, i).output > model.get_perceptron(model.num_layer-1, idx_best).output:
+                        idx_best = i
+                
+                # Set error if output is not desired label
+                if model.get_perceptron(model.num_layer-1, idx_best).label != data_row.get(result_column_name):
+                    cummulative_error += 1
+                
                 model.backward_phase()
+        
         model.set_all_weight(learning_rate)
-    error = model.cummulative_error
+    
+    error = float(cummulative_error) / len(df.index)
