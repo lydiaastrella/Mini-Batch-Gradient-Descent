@@ -30,14 +30,8 @@ for i in range (len(df.values)):
 status = input("Mau pakai parameter manual atau auto aja? (manual/auto) ")
 
 if (status == 'manual'):
-    # Ask for number of hidden layers and number of perceptrons per layer
-    num_hidden_layer = int(input('Masukkan jumlah hidden layer: '))
-    num_perceptrons_in_layer = []
-    print('Masukkan jumlah perceptron untuk tiap layer.')
-    for x in range(num_hidden_layer):
-        num_perceptrons_in_layer.append(int(input()))
-
     # INPUT VARIABLES
+    num_hidden_layer = int(input('Masukkan jumlah hidden layer: '))
     max_iteration = int(input('Jumlah maksimal iterasi  : '))
     learning_rate = float(input('Learning rate            : '))
     batch_size = int(input('Jumlah data per batch    : '))
