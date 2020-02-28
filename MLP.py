@@ -211,7 +211,7 @@ print('Data loaded.')
 
 # Determine info about input and outputs from data
 attributes = df.columns.values.tolist()
-attributes.pop()
+result_column_name = attributes.pop()
 results = set(df.iloc[:,-1].tolist())
 result_labels = []
 for result in results:
