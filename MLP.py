@@ -215,6 +215,7 @@ for result in results:
 
 # Ask for number of hidden layers and number of perceptrons per layer
 if (data_source == 'ppt'):
+    result_labels.append('Output1')
     num_hidden_layer = 1
     num_perceptrons_in_layer = [2]
 else:
@@ -233,9 +234,12 @@ model.add_layer(layer)
 for layer_idx in range(len(num_perceptrons_in_layer)):
     layer = Layer()
     for x in range(num_perceptrons_in_layer[layer_idx]):
-        hp = HiddenPerceptron(num_perceptrons_in_layer[layer_idx-1])
-        for input_idx in range(num_perceptrons_in_layer[layer_idx-1] + 1):
-            hp.set_weight(input_idx, random.randrange(0, 1))
+        if (layer_idx == 0):
+            hp = HiddenPerceptron(len(attributes))
+        else:
+            hp = HiddenPerceptron(num_perceptrons_in_layer[layer_idx-1])
+        for input_idx in range(len(hp.weight)):
+            hp.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
         layer.add_perceptron(hp)
     model.add_layer(layer)
 
@@ -243,7 +247,7 @@ layer = Layer()
 for x in range(len(result_labels)):
     op = OutputPerceptron(result_labels[x], num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1])
     for input_idx in range(num_perceptrons_in_layer[len(num_perceptrons_in_layer)-1] + 1):
-        hp.set_weight(input_idx, random.randrange(0, 1))
+        op.set_weight(input_idx, float(random.randrange(0, 100)) / 100)
     layer.add_perceptron(op)
 model.add_layer(layer)
 
